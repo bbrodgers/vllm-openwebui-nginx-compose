@@ -7,10 +7,10 @@ services:
     image: nginx:latest
     container_name: nginx-proxy
     ports:
-      - "80:80"
-      - "443:443"
+      - "10.0.10.90:80:80"
+      - "10.0.10.90:443:443"
     volumes:
-      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro,z"
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf:z"
       - "./certs:/etc/nginx/certs:ro,z"
     depends_on:
       vllm-server:
@@ -43,13 +43,14 @@ services:
     # Formatted as a YAML array for clean option passing
     command:
       - "--model=${MODEL}"
-      #- "--hf-config-path=unsloth/Qwen3-Coder-30B-A3B-Instruct"
       - "--gpu-memory-utilization=0.90"
       - "--max-model-len=8192"
       - "--max-num-batched-tokens=8192"
+      - "--reasoning-parser=gemma4"
       #- "--served-model-name=mimir"
-      #- "--enable-auto-tool-choice"
-      #- "--tool-call-parser=openai"
+      - "--enable-auto-tool-choice"
+      - "--tool-call-parser=gemma4"
+      #- "--chat-template examples/tool_chat_template_gemma4.jinja"
       # - "--quantization=awq"  # Easily toggle quantization here
     healthcheck:
       test: ["CMD-SHELL", "curl -f --connect-timeout 4 --max-time 9 http://127.0.0.1:8000/health || exit 1"]
