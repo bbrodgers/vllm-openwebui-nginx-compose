@@ -42,14 +42,16 @@ services:
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
     # Formatted as a YAML array for clean option passing
     command:
-      - "--model=${MODEL}"
+      - "${MODEL}"
       - "--gpu-memory-utilization=0.90"
       - "--max-model-len=8192"
       - "--max-num-batched-tokens=8192"
       - "--reasoning-parser=gemma4"
-      #- "--served-model-name=mimir"
-      - "--enable-auto-tool-choice"
       - "--tool-call-parser=gemma4"
+      - "--enable-auto-tool-choice"
+      - "--default-chat-template-kwargs"
+      - '{"enable_thinking":true}'
+      #- "--served-model-name=mimir"
       #- "--chat-template examples/tool_chat_template_gemma4.jinja"
       # - "--quantization=awq"  # Easily toggle quantization here
     healthcheck:
