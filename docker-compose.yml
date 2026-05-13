@@ -3,12 +3,15 @@ networks: # Define a custom network
     driver: bridge
 
 services:
+
+#Nginx
   nginx-proxy:
     image: nginx:latest
     container_name: nginx-proxy
     ports:
       - "10.0.10.90:80:80"
       - "10.0.10.90:443:443"
+      - "10.0.10.90:8000:8000"
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf:z"
       - "./certs:/etc/nginx/certs:ro,z"
@@ -21,6 +24,7 @@ services:
       - internal_network
     restart: always
 
+#vLLM
   vllm-server:
     image: vllm/vllm-openai:latest
     container_name: vllm-server
@@ -42,16 +46,17 @@ services:
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
     # Formatted as a YAML array for clean option passing
     command:
-      - "cyankiwi/Qwen3.6-27B-AWQ-INT4"
-      - "--gpu-memory-utilization=0.95"
-      - "--max-model-len=8192"
-      - "--max-num-batched-tokens=8192"
-      - "--reasoning-parser=qwen3"
-      - "--tool-call-parser=qwen3_coder"
+      - "cyankiwi/gemma-4-26B-A4B-it-AWQ-4bit"
+      - "--served-model-name"
+      - "gemma-4"
+      - "--gpu-memory-utilization=0.90"
+      - "--max-model-len=8096"
+      - "--max-num-batched-tokens=8096"
+      - "--reasoning-parser=gemma4"
+      - "--tool-call-parser=gemma4"
       - "--enable-auto-tool-choice"
-      - "--language-model-only"
       - "--default-chat-template-kwargs"
-      - '{"enable_thinking":true}' 
+      - '{"enable_thinking":true}'
     healthcheck:
       test: ["CMD-SHELL", "curl -f --connect-timeout 4 --max-time 9 http://127.0.0.1:8000/health || exit 1"]
       interval: 15s
@@ -62,6 +67,7 @@ services:
       - internal_network
     restart: always
 
+#Open WebUI
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
@@ -78,6 +84,23 @@ services:
     networks: # Connect open-webui to the internal network
       - internal_network
     restart: always
+
+#Litellm
+  litellm-proxy:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-proxy
+    ports:
+      - "4000:4000"
+    environment:
+      - vLLM_API_BASE=http://vllm-server:8000/v1
+      - LITELLM_USE_CHAT_COMPLETIONS_URL_FOR_ANTHROPIC_MESSAGES=true
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro,z
+    command: [ "--config", "/app/config.yaml", "--port", "4000" ]
+    networks:
+      - internal_network
+    depends_on:
+      - vllm-server
 
 volumes:
   open-webui_data: # Define the named volume
