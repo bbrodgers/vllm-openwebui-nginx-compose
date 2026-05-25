@@ -1,0 +1,10 @@
+model_list:
+  - model_name: "claude-3-7-sonnet-20250219" # Claude Code expects this or similar
+    litellm_params:
+      model: openai/gemma-4
+      api_base: http://vllm-server:8000/v1
+      api_key: "not-needed" # vLLM doesn't require one by default
+      tpm: 100000
+      rpm: 1000
+      drop_params: true
+      max_tokens: 8192
