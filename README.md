@@ -1,3 +1,6 @@
+> [!NOTE]
+> This repo was originally forked from [marib00/vllm-openwebui-nginx-compose](https://github.com/marib00/vllm-openwebui-nginx-compose.git). I have disconnected it because I am doing my own seperate things.
+
 # vLLM OpenWebUI NGINX Docker Compose
 
 This repository provides a Docker Compose setup that integrates vLLM (a fast LLM inference engine), Open WebUI (a user-friendly web interface), and NGINX (as a reverse proxy with SSL termination).
